@@ -34,9 +34,8 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="KeePass, Version=2.51.1.15884, Culture=neutral, PublicKeyToken=fed2ed7716aecf5c, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\..\Program Files\KeePass Password Safe 2\KeePass.exe</HintPath>
+    <Reference Include="KeePass, Version=2.51.1.21987, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\KeePass.2.51.1.21987\lib\net462\KeePass.exe</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=4.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.4.0.1\lib\40\Newtonsoft.Json.dll</HintPath>
