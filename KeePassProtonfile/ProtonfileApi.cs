@@ -36,6 +36,7 @@ namespace KeePassProtonfile
     }
     class LoginData { public string email, password; };
     class LoginResponse { public string token; };
+    class FileResponse : ApiFile { public string signed_token; };
 
     internal class ProtonfileApi
     {
@@ -181,6 +182,23 @@ namespace KeePassProtonfile
             client.Headers.Add("x-access-token", this.accessToken);
             client.UploadFile(NormalizeUrlParams(NormalizeApiUrl("file"), "folder_uid", parentFolder), "POST", fileSource);
             client.Dispose();
+        }
+        public async Task<string> downloadFile(string file_uid, string outPath) {
+            if (!authenticated) await authenticate();
+            WebClient client = new WebClient();
+            client.Credentials = CredentialCache.DefaultCredentials;
+            client.Headers.Add("x-access-token", this.accessToken);
+
+            var request = new HttpRequestMessage(HttpMethod.Get, NormalizeUrlParams(NormalizeApiUrl("file"), "file_uid", file_uid));
+            request.Headers.Add("x-access-token", this.accessToken);
+            var res = await httpClient.SendAsync(request);
+            res.EnsureSuccessStatusCode();
+            var responseString = await res.Content.ReadAsStringAsync();
+            FileResponse obj = JsonConvert.DeserializeObject<FileResponse>(responseString);
+
+            client.DownloadFile(NormalizeApiUrl("file", obj.signed_token), outPath);
+            client.Dispose();
+            return outPath;
         }
         public async Task Dispose()
         {

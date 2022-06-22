@@ -20,6 +20,7 @@ namespace KeePassProtonfile
             this.Load += new EventHandler(Login_Load);
             button1.Click += new EventHandler(button1_Click);
             checkBox1.Click += new EventHandler(checkbox1_Clicked);
+            radioButton2.Click += new EventHandler(radioButton2_Clicked);
 
             if(configuration.getEntry("multipleBackups") == null)
             {
@@ -28,6 +29,14 @@ namespace KeePassProtonfile
 
             var multipleBackups = configuration.getEntry("multipleBackups").Strings.Get(PwDefs.UserNameField).ReadString();
             checkBox1.Checked = multipleBackups == "true" ? true : false;
+            var operatingMode = configuration.getEntry("operatingMode").Strings.Get(PwDefs.UserNameField).ReadString();
+            if(operatingMode == "sync")
+            {
+                radioButton2.Checked = true;
+            } else
+            {
+                radioButton1.Checked = true;
+            }
 
             checkbox1_Clicked();
 
@@ -69,6 +78,7 @@ namespace KeePassProtonfile
             configuration.setEntry("filename", filename);
             configuration.setEntry("multipleBackups", checkBox1.Checked ? "true" : "false");
             configuration.setEntry("multipleBackupsNum", numericUpDown1.Value.ToString());
+            configuration.setEntry("operatingMode", radioButton2.Checked ? "sync" : "backup");
 
             Saved = true;
 
@@ -87,6 +97,7 @@ namespace KeePassProtonfile
         private void checkbox1_Clicked()
         {
             numericUpDown1.ReadOnly = !checkBox1.Checked;
+            if (checkBox1.Checked && radioButton2.Checked) radioButton1.Checked = true;
 
             var entry = configuration.getEntry("multipleBackupsNum");
             if (entry == null) return;
@@ -99,6 +110,10 @@ namespace KeePassProtonfile
             var state = Saved;
             if (state) Saved = false;
             return state;
+        }
+        private void radioButton2_Clicked(object sender, EventArgs e)
+        {
+            if (radioButton2.Checked && checkBox1.Checked) checkBox1.Checked = false;
         }
     }
 }

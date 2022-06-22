@@ -38,6 +38,10 @@
             this.label3 = new System.Windows.Forms.Label();
             this.tabPage2 = new System.Windows.Forms.TabPage();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.radioButton2 = new System.Windows.Forms.RadioButton();
+            this.radioButton1 = new System.Windows.Forms.RadioButton();
+            this.label11 = new System.Windows.Forms.Label();
+            this.label10 = new System.Windows.Forms.Label();
             this.label9 = new System.Windows.Forms.Label();
             this.numericUpDown1 = new System.Windows.Forms.NumericUpDown();
             this.checkBox1 = new System.Windows.Forms.CheckBox();
@@ -150,6 +154,10 @@
             // 
             // groupBox2
             // 
+            this.groupBox2.Controls.Add(this.radioButton2);
+            this.groupBox2.Controls.Add(this.radioButton1);
+            this.groupBox2.Controls.Add(this.label11);
+            this.groupBox2.Controls.Add(this.label10);
             this.groupBox2.Controls.Add(this.label9);
             this.groupBox2.Controls.Add(this.numericUpDown1);
             this.groupBox2.Controls.Add(this.checkBox1);
@@ -162,15 +170,54 @@
             this.groupBox2.Controls.Add(this.textBox3);
             this.groupBox2.Location = new System.Drawing.Point(6, 6);
             this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(360, 206);
+            this.groupBox2.Size = new System.Drawing.Size(360, 259);
             this.groupBox2.TabIndex = 1;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Protonfile";
             // 
+            // radioButton2
+            // 
+            this.radioButton2.AutoSize = true;
+            this.radioButton2.Location = new System.Drawing.Point(169, 19);
+            this.radioButton2.Name = "radioButton2";
+            this.radioButton2.Size = new System.Drawing.Size(49, 17);
+            this.radioButton2.TabIndex = 13;
+            this.radioButton2.Text = "Sync";
+            this.radioButton2.UseVisualStyleBackColor = true;
+            // 
+            // radioButton1
+            // 
+            this.radioButton1.AutoSize = true;
+            this.radioButton1.Location = new System.Drawing.Point(101, 19);
+            this.radioButton1.Name = "radioButton1";
+            this.radioButton1.Size = new System.Drawing.Size(62, 17);
+            this.radioButton1.TabIndex = 2;
+            this.radioButton1.Text = "Backup";
+            this.radioButton1.UseVisualStyleBackColor = true;
+            // 
+            // label11
+            // 
+            this.label11.ForeColor = System.Drawing.SystemColors.ControlDarkDark;
+            this.label11.Location = new System.Drawing.Point(6, 42);
+            this.label11.Name = "label11";
+            this.label11.Size = new System.Drawing.Size(348, 40);
+            this.label11.TabIndex = 12;
+            this.label11.Text = "*Backup: copy your database to your Protonfile account\r\nSync: synchronize your da" +
+    "tabase with Protonfile and other devices that use the plugin";
+            // 
+            // label10
+            // 
+            this.label10.AutoSize = true;
+            this.label10.Location = new System.Drawing.Point(6, 21);
+            this.label10.Name = "label10";
+            this.label10.Size = new System.Drawing.Size(82, 13);
+            this.label10.TabIndex = 11;
+            this.label10.Text = "Operating mode";
+            // 
             // label9
             // 
             this.label9.ForeColor = System.Drawing.SystemColors.ControlDarkDark;
-            this.label9.Location = new System.Drawing.Point(13, 147);
+            this.label9.Location = new System.Drawing.Point(13, 216);
             this.label9.Name = "label9";
             this.label9.Size = new System.Drawing.Size(341, 18);
             this.label9.TabIndex = 9;
@@ -178,7 +225,7 @@
             // 
             // numericUpDown1
             // 
-            this.numericUpDown1.Location = new System.Drawing.Point(122, 124);
+            this.numericUpDown1.Location = new System.Drawing.Point(122, 193);
             this.numericUpDown1.Maximum = new decimal(new int[] {
             50,
             0,
@@ -201,7 +248,7 @@
             // checkBox1
             // 
             this.checkBox1.AutoSize = true;
-            this.checkBox1.Location = new System.Drawing.Point(100, 126);
+            this.checkBox1.Location = new System.Drawing.Point(100, 195);
             this.checkBox1.Name = "checkBox1";
             this.checkBox1.Size = new System.Drawing.Size(15, 14);
             this.checkBox1.TabIndex = 7;
@@ -210,7 +257,7 @@
             // label8
             // 
             this.label8.AutoSize = true;
-            this.label8.Location = new System.Drawing.Point(6, 126);
+            this.label8.Location = new System.Drawing.Point(6, 195);
             this.label8.Name = "label8";
             this.label8.Size = new System.Drawing.Size(88, 13);
             this.label8.TabIndex = 6;
@@ -219,7 +266,7 @@
             // label7
             // 
             this.label7.ForeColor = System.Drawing.SystemColors.ControlDarkDark;
-            this.label7.Location = new System.Drawing.Point(13, 88);
+            this.label7.Location = new System.Drawing.Point(13, 157);
             this.label7.Name = "label7";
             this.label7.Size = new System.Drawing.Size(341, 29);
             this.label7.TabIndex = 5;
@@ -228,7 +275,7 @@
             // 
             // textBox4
             // 
-            this.textBox4.Location = new System.Drawing.Point(61, 65);
+            this.textBox4.Location = new System.Drawing.Point(61, 134);
             this.textBox4.Name = "textBox4";
             this.textBox4.Size = new System.Drawing.Size(293, 20);
             this.textBox4.TabIndex = 4;
@@ -236,7 +283,7 @@
             // label6
             // 
             this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(6, 68);
+            this.label6.Location = new System.Drawing.Point(6, 137);
             this.label6.Name = "label6";
             this.label6.Size = new System.Drawing.Size(49, 13);
             this.label6.TabIndex = 3;
@@ -246,7 +293,7 @@
             // 
             this.label5.AutoSize = true;
             this.label5.ForeColor = System.Drawing.SystemColors.ControlDarkDark;
-            this.label5.Location = new System.Drawing.Point(6, 42);
+            this.label5.Location = new System.Drawing.Point(6, 111);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(341, 13);
             this.label5.TabIndex = 2;
@@ -255,7 +302,7 @@
             // label4
             // 
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(6, 22);
+            this.label4.Location = new System.Drawing.Point(6, 91);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(89, 13);
             this.label4.TabIndex = 1;
@@ -263,7 +310,7 @@
             // 
             // textBox3
             // 
-            this.textBox3.Location = new System.Drawing.Point(101, 19);
+            this.textBox3.Location = new System.Drawing.Point(101, 88);
             this.textBox3.Name = "textBox3";
             this.textBox3.Size = new System.Drawing.Size(253, 20);
             this.textBox3.TabIndex = 0;
@@ -324,5 +371,9 @@
         private System.Windows.Forms.NumericUpDown numericUpDown1;
         private System.Windows.Forms.CheckBox checkBox1;
         private System.Windows.Forms.Label label8;
+        private System.Windows.Forms.Label label11;
+        private System.Windows.Forms.Label label10;
+        private System.Windows.Forms.RadioButton radioButton2;
+        private System.Windows.Forms.RadioButton radioButton1;
     }
 }

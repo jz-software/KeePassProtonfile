@@ -9,9 +9,11 @@ namespace KeePassProtonfile
     {
         private IPluginHost m_host;
 		private PwGroup protonGroup;
+		private bool updated;
         public Configuration(IPluginHost mHost)
         {
 			m_host = mHost;
+			updated = false;
 		}
 		// call this method when db is opened
         public void init() {
@@ -28,32 +30,21 @@ namespace KeePassProtonfile
 					protonGroup = e;
 				};
             }
-			if (found) return;
+			if (!found)
+            {
+				PwGroup pg = new PwGroup(true, true, "Protonfile", PwIcon.Home);
+				pgParent.AddGroup(pg, true);
+				protonGroup = pg;
+			};
 
-			PwGroup pg = new PwGroup(true, true, "Protonfile", PwIcon.Home);
-			pgParent.AddGroup(pg, true);
-
-			protonGroup = pg;
-
-			PwEntry pe = new PwEntry(true, true);
-
-			pe.Strings.Set(PwDefs.TitleField, new ProtectedString(
-				pd.MemoryProtection.ProtectTitle, "auth"));
-			pe.Strings.Set(PwDefs.UserNameField, new ProtectedString(
-				pd.MemoryProtection.ProtectUserName, String.Empty));
-			pe.Strings.Set(PwDefs.PasswordField, new ProtectedString(
-				pd.MemoryProtection.ProtectPassword, String.Empty));
-			pe.Strings.Set(PwDefs.NotesField, new ProtectedString(
-				pd.MemoryProtection.ProtectPassword, "Your Protonfile credentials"));
-
-			pg.AddEntry(pe, true);
-
+			if (getEntry("auth") == null) setEntry("auth", "");
 			if (getEntry("multipleBackups") == null) setEntry("multipleBackups", "false");
 			if (getEntry("multipleBackupsNum") == null) setEntry("multipleBackupsNum", "1");
 			if (getEntry("filename") == null) setEntry("filename", "database");
 			if (getEntry("destinationFolder") == null) setEntry("destinationFolder", "keepass");
+			if (getEntry("operatingMode") == null) setEntry("operatingMode", "backup");
 
-			m_host.MainWindow.UpdateUI(false, null, true, null, false, null, true);
+			m_host.MainWindow.UpdateUI(false, null, true, null, false, null, this.updated);
 		}
 		public PwEntry getEntry(String title)
         {
@@ -69,6 +60,7 @@ namespace KeePassProtonfile
 		}
 		public PwEntry setEntry(String title, String value, String password = "")
         {
+			this.updated = true;
 			var entries = protonGroup.GetEntries(false);
 			PwEntry entry = null;
 

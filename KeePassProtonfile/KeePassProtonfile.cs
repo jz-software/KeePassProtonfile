@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using KeePass.Plugins;
 using KeePass.Forms;
 using KeePassLib;
+using System.Threading.Tasks;
 
 namespace KeePassProtonfile
 {
@@ -17,6 +18,7 @@ namespace KeePassProtonfile
         private IPluginHost m_host = null;
         private Configuration configuration;
         private ProtonfileApi protonfileApi;
+        private KeePass.UI.StatusBarLogger statusBarLogger;
 
         public enum StatusPriority
         {
@@ -29,7 +31,6 @@ namespace KeePassProtonfile
         public override bool Initialize(IPluginHost host)
         {
             m_host = host;
-            m_host.MainWindow.FileSaving += this.OnFileSaving;
 
             ToolStripItemCollection tsMenu = m_host.MainWindow.ToolsMenu.DropDownItems;
 
@@ -46,27 +47,96 @@ namespace KeePassProtonfile
             m_tsmiOptions.Click += OnMenuShowOptions;
             m_tsmiPopup.DropDownItems.Add(m_tsmiOptions);
 
+            var m_tsmiSync = new ToolStripMenuItem();
+            m_tsmiSync.Text = "Sync with cloud";
+            m_tsmiSync.Click += OnMenuSyncDatabase;
+            m_tsmiPopup.DropDownItems.Add(m_tsmiSync);
+
             configuration = new Configuration(m_host);
 
             m_host.MainWindow.FileOpened += FileOpened;
             m_host.MainWindow.FileClosed += FileClosed;
+            m_host.MainWindow.FileSaved += OnFileSaved;
+            m_host.MainWindow.FileClosingPre += OnFileClosingPre;
+
+            this.statusBarLogger = m_host.MainWindow.CreateStatusBarLogger();
 
             return true;
         }
-
-        private void FileOpened(object sender, FileOpenedEventArgs e)
+        private void OnMenuSyncDatabase(object sender, EventArgs e)
         {
+            var operatingMode = configuration.getEntry("operatingMode").Strings.Get(PwDefs.UserNameField).ReadString();
+            if (operatingMode == "sync") SyncDatabase();
+        }
+        private async Task SyncDatabase()
+        {
+            var deserialized = await this.protonfileApi.getDb();
+            var path = configuration.getEntry("destinationFolder").Strings.Get(PwDefs.UserNameField).ReadString();
+            var split = path.Split('/');
+            var parentFolder = "null";
+            foreach (var folderName in split)
+            {
+                var foundItem = deserialized.folders.Find(item => item.parent_folder == (parentFolder == "null" ? null : parentFolder) && item.title == folderName);
+                if (foundItem != null)
+                {
+                    parentFolder = foundItem.folder_uid;
+                }
+                else if (folderName != "") parentFolder = null;
+                else if (folderName != "") break;
+            }
+
+            if (parentFolder == null) return;
+
+            var source = configuration.getEntry("filename").Strings.Get(PwDefs.UserNameField).ReadString();
+            var file = deserialized.files.Find(e => e.folder_uid == parentFolder
+                    && e.filename == source);
+
+            if (file == null) return;
+
+            string resPath;
+            try
+            {
+                var outPath = Path.Combine(Path.GetDirectoryName(m_host.Database.IOConnectionInfo.Path), "sync.kdbx");
+                resPath = await protonfileApi.downloadFile(file.file_uid, outPath);
+
+                var pw = new PwDatabase();
+                var connectionInfo = new KeePassLib.Serialization.IOConnectionInfo();
+                connectionInfo.Path = resPath;
+                pw.Open(connectionInfo, m_host.Database.MasterKey, null);
+                m_host.Database.MergeIn(pw, PwMergeMethod.Synchronize);
+                pw.Close();
+                File.Delete(resPath);
+                m_host.Database.Save(null);
+                m_host.MainWindow.UpdateUI(false, null, true, null, true, null, false);
+            } catch (Exception err)
+            {
+                UpdateProtonfileStatus("PF | Error during sync " + err.StackTrace);
+            }
+        }
+        private async void FileOpened(object sender, FileOpenedEventArgs e)
+        {
+            UpdateProtonfileStatus("PF");
             configuration.init();
             var authEntry = configuration.getEntry("auth");
             var email = authEntry.Strings.Get(PwDefs.UserNameField).ReadString();
             var password = authEntry.Strings.Get(PwDefs.PasswordField).ReadString();
             this.protonfileApi = new ProtonfileApi(email, password);
+
+            var operatingMode = configuration.getEntry("operatingMode").Strings.Get(PwDefs.UserNameField).ReadString();
+            if (operatingMode == "sync")
+            {
+                await SyncDatabase();
+                UpdateProtonfileStatus("PF | Cloud synchronized");
+            }
         }
         private async void FileClosed(object sender, FileClosedEventArgs e)
         {
-            await this.protonfileApi.Dispose();
+            await protonfileApi.Dispose();
         }
-
+        private void OnFileClosingPre(object sender, FileClosingEventArgs e)
+        {
+            UpdateProtonfileStatus("PF | Waiting for file");
+        }
         private void UpdateProtonfileStatus(string status, string desc = "")
         {
             m_host.MainWindow.RemoveCustomToolBarButton("protonfileStatus");
@@ -93,10 +163,9 @@ namespace KeePassProtonfile
 
         public override void Terminate()
         {
-            this.m_host.MainWindow.FileSaving -= this.OnFileSaving;
+            this.m_host.MainWindow.FileSaved -= this.OnFileSaved;
             this.m_host.MainWindow.RemoveCustomToolBarButton("protonfileStatus");
         }
-
         private void OnMenuShowOptions(object sender, EventArgs e)
         {
             // Set the status bar to the KeePass default
@@ -133,10 +202,16 @@ namespace KeePassProtonfile
 
         private async void ProcessPostFile(string filePath)
         {
+            uint progress = 10;
             try
             {
+                await SyncDatabase();
+                progress += 10;
+                this.statusBarLogger.SetProgress(progress);
                 // we locate the folder uid to which we'll upload the file
                 var deserialized = await this.protonfileApi.getDb();
+                progress += 10;
+                this.statusBarLogger.SetProgress(progress);
 
                 var path = configuration.getEntry("destinationFolder").Strings.Get(PwDefs.UserNameField).ReadString();
                 var split = path.Split('/');
@@ -163,6 +238,9 @@ namespace KeePassProtonfile
                 {
                     return x.filename.CompareTo(y.filename);
                 });
+
+                progress += 10;
+                this.statusBarLogger.SetProgress(progress);
 
                 var multipleBackups = bool.Parse(configuration.getEntry("multipleBackups").Strings.Get(PwDefs.UserNameField).ReadString());
 
@@ -209,6 +287,8 @@ namespace KeePassProtonfile
                     newSource = newSource + "1" + ".kdbx";
                 }
 
+                this.statusBarLogger.SetProgress(60);
+
                 if (!multipleBackups)
                 {
                     // simulate an overwrite if same files exist
@@ -219,10 +299,13 @@ namespace KeePassProtonfile
                     }
                 }
 
+                this.statusBarLogger.SetProgress(80);
+
                 newSource = Path.Combine(Path.GetDirectoryName(filePath), newSource);
                 File.Copy(filePath, newSource);
 
                 this.protonfileApi.uploadFile(newSource, parentFolder);
+                this.statusBarLogger.SetProgress(90);
                 File.Delete(newSource);
 
                 UpdateProtonfileStatus("PF | Synchronized");
@@ -231,11 +314,13 @@ namespace KeePassProtonfile
             {
                 UpdateProtonfileStatus("PF | Synchronization Failed", err.Message + " " + err.StackTrace);
             }
+            this.statusBarLogger.EndLogging();
         }
 
-        private void OnFileSaving(object sender, FileSavingEventArgs e)
+        private void OnFileSaved(object sender, FileSavedEventArgs e)
         {
-            if(!e.Database.IsOpen)
+            this.statusBarLogger.StartLogging("Backing up database", false);
+            if (!e.Database.IsOpen)
             {
                 return;
             }
@@ -264,6 +349,8 @@ namespace KeePassProtonfile
                 wc.DownloadFile(e.Database.IOConnectionInfo.Path, SourceFile);
                 wc.Dispose();
             }
+
+            this.statusBarLogger.SetProgress(10);
 
             ProcessPostFile(SourceFile);
         }
