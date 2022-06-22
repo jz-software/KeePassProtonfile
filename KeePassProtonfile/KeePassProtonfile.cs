@@ -224,7 +224,7 @@ namespace KeePassProtonfile
                         parentFolder = foundItem.folder_uid;
                     } else if (folderName != "")
                     {
-                        var postResDeserialized = await this.protonfileApi.createFolder(folderName, parentFolder);   
+                        var postResDeserialized = await this.protonfileApi.createFolder(folderName, parentFolder == "null" ? null : parentFolder);
                         parentFolder = postResDeserialized.folder_uid;
                     }
                 }
